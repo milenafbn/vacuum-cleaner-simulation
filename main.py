@@ -72,6 +72,68 @@ def TableDrivenAgentProgram(table):
     
     return program
 
+
+class VacuumUI:
+    """Graphical interface for the vacuum cleaner environment"""
+    def __init__(self, environment):
+        self.env = environment
+        self.root = tk.Tk()
+        self.root.title("Vacuum cleaner")
+        
+        # interface
+        self.canvas = tk.Canvas(self.root, width=400, height=200)
+        self.canvas.pack()
+        
+        # Next button
+        self.step_button = tk.Button(self.root, text="Next", command=self.step)
+        self.step_button.pack()
+        
+        self.info_label = tk.Label(self.root, text="")
+        self.info_label.pack()
+        
+        self.draw_environment()
+    
+    def draw_environment(self):
+        self.canvas.delete("all")
+        
+        # locations A and B
+        self.canvas.create_rectangle(50, 50, 150, 150, outline="black")
+        self.canvas.create_rectangle(250, 50, 350, 150, outline="black")
+        
+        # labels
+        self.canvas.create_text(100, 30, text="A")
+        self.canvas.create_text(300, 30, text="B")
+        
+        # Show status (clean or dirty)
+        if self.env.status[Location.A] == 'Dirty':
+            self.canvas.create_text(100, 130, text="Dirty")
+        if self.env.status[Location.B] == 'Dirty':
+            self.canvas.create_text(300, 130, text="Dirty")
+        if self.env.status[Location.A] == 'Clean':
+            self.canvas.create_text(100, 130, text="Clean")
+        if self.env.status[Location.B] == 'Clean':
+            self.canvas.create_text(300, 130, text="Clean")
+        
+        if self.env.status[Location.A] == 'Clean' and self.env.status[Location.B] == 'Clean':
+            self.canvas.create_text(200, 180, text="Finish")
+        # Show agent
+        agent_x = 100 if self.env.agent.location == Location.A else 300
+        self.canvas.create_oval(agent_x-20, 80, agent_x+20, 120, fill="blue")
+        
+        # Show performance
+        self.info_label.config(text=f"Performance: {self.env.agent.performance}")
+    
+    def step(self):
+        percept = self.env.percept()
+        action = self.env.agent.program(percept)
+        self.env.execute_action(action)
+        self.draw_environment()
+    
+    def run(self):
+        # Run the interface
+        self.root.mainloop()
+
+
 # Partial tabulation of the agent's function
 table = {
     ((Location.A, 'Clean'),): 'Right',
@@ -85,3 +147,13 @@ table = {
     ((Location.A, 'Dirty'), (Location.A, 'Clean'), (Location.B, 'Dirty')): 'Suck',
     ((Location.B, 'Dirty'), (Location.B, 'Clean'), (Location.A, 'Dirty')): 'Suck'
 }
+
+# Main program
+if __name__ == "__main__":
+    env = Environment()
+    agent = Agent(TableDrivenAgentProgram(table))
+    env.add_agent(agent)
+    
+    # Create the graphical interface
+    ui = VacuumUI(env)
+    ui.run()
