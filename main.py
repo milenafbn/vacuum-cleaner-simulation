@@ -21,9 +21,9 @@ class Agent(Thing):
     """agent class (vacuum cleaner)"""
     def __init__(self, program):
         super().__init__()
-        self.location = Location.A  #localização inicial
-        self.program = program      #programa do agente
-        self.performance = 0        # pontuação inicial de performance
+        self.location = Location.A  # Initial location
+        self.program = program      # Agent's program
+        self.performance = 0        # Performance measure
         
 class Environment:
     """Agent's environment (Location A and B)"""
@@ -57,6 +57,20 @@ class Environment:
                 self.agent.performance += 10
                 self.status[self.agent.location] = 'Clean'
 
+
+def TableDrivenAgentProgram(table):
+    """The agent selects an action based on the percept sequence"""
+    percepts = []
+    
+    def program(percept):
+        percepts.append(percept)
+        action = table.get(tuple(percepts))
+        print(percepts)
+        return action if action else 'NoOp'
+    
+    print(percepts)
+    
+    return program
 
 # Partial tabulation of the agent's function
 table = {
